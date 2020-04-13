@@ -1,0 +1,11 @@
+/keycloakBackup/*
+/traefik/letsencrypt/acme.json
+/traefik/conf/.*
+/traefik/conf/*
+/prometheus
+/ttyd
+.env
+.vscode
+*.code-workspace
+DONTREADME.md
+docker-compose.override.yml

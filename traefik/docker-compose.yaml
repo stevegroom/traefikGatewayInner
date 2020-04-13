@@ -1,0 +1,114 @@
+version: '3.7'
+
+  #############################################################################################
+  ##############################################################################################
+  ##
+  ## Traefik (INNER)
+  ## 
+  ## .env You have to create .env files with
+  ## all the parameters pre-filled before starting
+  ## this docker-compose.yml file.
+  ##
+  ## .env in the same directory as docker-compose.yml
+  #############################################################################################
+  #############################################################################################
+
+networks:
+  traefik:
+    name: traefik
+
+services:
+
+  #########################################################
+  #########################################################
+  ##
+  ## TRAEFIK
+  ## The official v2.2 Traefik docker image
+  ## The Cloud Native Edge Router
+  ##
+  #########################################################
+  #########################################################
+  traefik:
+    
+    image: traefik:v2.2
+    container_name: traefik
+    command: 
+#     - "--accesslog=true"
+      - "--log.level=WARN"
+      - "--ping=false"
+#     - "--ping.entrypoint=pingport"
+
+      # Enable the web UI on http"
+      - "--api"
+      - "--api.insecure=true" 
+
+      # Define the port Traefik listens on
+      - "--entrypoints.web.address=:80"             #Declares the web entrypoint in Traefik
+
+      - "--global.sendAnonymousUsage=true"
+
+      # Providers
+      # Tell Traefik to listen to docker
+      - "--providers.docker=true" 
+      - "--providers.docker.exposedbydefault=true"
+      
+      - "--providers.file.directory=/conf"
+      - "--providers.file.watch=true"
+      
+      - "--tracing=false"
+
+    environment:
+      TZ: "Europe/Zurich"
+
+
+    ports:
+
+      - "80:80"
+      #- "443:443"
+
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+      - "./conf:/conf"
+
+    networks:
+      - traefik
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+
+      # Define the URL to access this app
+      - "traefik.http.routers.traefik.rule=Host(`traefik2.${DOMAINNAME}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=web"
+
+    restart: always
+
+  #########################################################
+  #########################################################
+  ##
+  ## WHOAMI
+  ## Test app to show IP address and other discovered 
+  ## information
+  #########################################################
+  #########################################################
+  whoami4:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - traefik
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.port=80"
+
+      # Define the URL to access this app
+      - "traefik.http.routers.whoami4.rule=Host(`whoami4.${DOMAINNAME}`)"
+      - "traefik.http.routers.whoami4.entrypoints=web"
+
+      # The application (i.e. this container)
+      - "traefik.http.routers.whoami4.service=whoami4"
+      - "traefik.http.services.whoami4.loadbalancer.server.port=80"
