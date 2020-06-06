@@ -15,6 +15,7 @@ version: '3.7'
 
 networks:
   traefik:
+    external: true
     name: traefik
 
 services:
@@ -34,7 +35,7 @@ services:
     container_name: traefik
     command: 
 #     - "--accesslog=true"
-      - "--log.level=WARN"
+      - "--log.level=DEBUG"
       - "--ping=false"
 #     - "--ping.entrypoint=pingport"
 
@@ -94,7 +95,7 @@ services:
   ## information
   #########################################################
   #########################################################
-  whoami4:
+  whoami3:
     # A container that exposes an API to show its IP address
     image: containous/whoami
     networks:
@@ -106,9 +107,9 @@ services:
       - "traefik.port=80"
 
       # Define the URL to access this app
-      - "traefik.http.routers.whoami4.rule=Host(`whoami4.${DOMAINNAME}`)"
-      - "traefik.http.routers.whoami4.entrypoints=web"
+      - "traefik.http.routers.whoami3.rule=Host(`whoami3.${DOMAINNAME}`)"
+      - "traefik.http.routers.whoami3.entrypoints=web"
 
       # The application (i.e. this container)
-      - "traefik.http.routers.whoami4.service=whoami4"
-      - "traefik.http.services.whoami4.loadbalancer.server.port=80"
+      - "traefik.http.routers.whoami3.service=whoami3"
+      - "traefik.http.services.whoami3.loadbalancer.server.port=80"
